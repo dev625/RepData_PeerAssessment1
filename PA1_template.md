@@ -49,6 +49,15 @@ ggplot(data=average_data, mapping=aes(x=interval, y=steps)) +
 
 ![](PA1_template_files/figure-html/avdailypat-1.png)<!-- -->
 
+### 5 minute interval containing the maximum number of steps averaged across all days
+
+```r
+average_data[which.max(average_data$steps),]$interval
+```
+
+```
+## [1] 835
+```
 
 ## Imputing missing values
 
