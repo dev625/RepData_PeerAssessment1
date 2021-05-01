@@ -7,23 +7,31 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r loading_preprocessing,echo=TRUE}
+
+```r
 unzip("activity.zip")         
 df2 <- read.csv("./activity.csv",na.strings = "NA")
 ```
 
 ## What is mean total number of steps taken per day?
-```{r meansteps,echo=TRUE}
+
+```r
 library(ggplot2)
 stepsvar <- tapply(df2$steps, df2$date, FUN=sum,na.rm=TRUE)
 qplot(stepsvar, binwidth=800, xlab="Days",ylab="Frequency of Total Steps Per Day",colour=I("purple"))
+```
+
+![](PA1_template_files/figure-html/meansteps-1.png)<!-- -->
+
+```r
 mean_steps <- as.integer(mean(stepsvar))
 median_steps <- median(stepsvar)
 ```
-The mean and median of total steps per day are `r mean_steps` and `r median_steps` respectively.
+The mean and median of total steps per day are 9354 and 10395 respectively.
 
 ## What is the average daily activity pattern?
-```{r avdailypat,echo=TRUE}
+
+```r
 library(ggplot2)
 #aggregate function ----> splits data into subsets
 #the by values are  --->coerced to factors before use
@@ -35,6 +43,8 @@ ggplot(data=average_data, mapping=aes(x=interval, y=steps)) +
     ylab("Average No of Steps Taken in Interval")
 ```
 
+![](PA1_template_files/figure-html/avdailypat-1.png)<!-- -->
+
 
 ## Imputing missing values
 
@@ -43,13 +53,19 @@ it is coded as NA in the original dataset. These missing values may introduce
 bias into some calculations or summaries of the data.
 
 Finding the number of missing values
-```{r number_of_missing,echo=TRUE}
+
+```r
 sum(is.na(df2))
+```
+
+```
+## [1] 2304
 ```
 
 We can fill all the missing values with the mean value of that 5 minute interval
 
-```{r}
+
+```r
 na_fill <- function(steps, interval) {
     mod_df <- NA
     if (!is.na(steps))
@@ -64,14 +80,20 @@ new_df$steps <- mapply(na_fill, new_df$steps, new_df$interval)
 Using the new dataset, we again plot the histogram and find the mean and median  
 of the total number of steps taken per day.
 
-```{r meansteps2,echo=TRUE}
+
+```r
 stepsvar2 <- tapply(new_df$steps, new_df$date, FUN=sum)
 qplot(stepsvar2, binwidth=800, xlab="total number of steps taken each day")
+```
+
+![](PA1_template_files/figure-html/meansteps2-1.png)<!-- -->
+
+```r
 mean_steps2 <- as.integer(mean(stepsvar2))
 median_steps2 <- as.integer(median(stepsvar2))
 ```
 The mean and median of total steps per day in the modified histogram are
-`r mean_steps2` and  `r median_steps2` respectively. 
+10766 and  10766 respectively. 
 The observation here is that these values differ from those in the first part
 of the assignment. The impact of imputing missing data is that both the mean
 and median values are higher relatively. This is because instead of using 0
@@ -82,7 +104,8 @@ values for the missing data we are using the mean value.
 For observing this difference, we need to find the day corresponding to 
 each date measurement.
 
-```{r}
+
+```r
 day_helper <- function(date) {
     day <- weekdays(date)
     foo <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
@@ -100,8 +123,11 @@ new_df$day <- sapply(new_df$date, FUN=day_helper)
 
 We make a time series plot of the 5 minute interval and the average number of  
 steps taken, averaged across all weekdays and week-end days.
-```{r panel_plot,echo=TRUE}
+
+```r
 average_data2 <- aggregate(steps ~ interval + day, data=new_df, mean)
 ggplot(average_data2, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
     xlab("Interval of 5 minutes")+ ylab("Average Number of Steps Taken in Interval")
 ```
+
+![](PA1_template_files/figure-html/panel_plot-1.png)<!-- -->
