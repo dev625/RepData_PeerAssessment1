@@ -9,6 +9,7 @@ output:
 ## Loading and preprocessing the data
 
 ```r
+#Unzipping the compressed file and loading the data
 unzip("activity.zip")         
 df2 <- read.csv("./activity.csv",na.strings = "NA")
 ```
@@ -16,8 +17,11 @@ df2 <- read.csv("./activity.csv",na.strings = "NA")
 ## What is mean total number of steps taken per day?
 
 ```r
-library(ggplot2)
+library(ggplot2)  #We use ggplot2 as the plotting library here
+
 stepsvar <- tapply(df2$steps, df2$date, FUN=sum,na.rm=TRUE)
+#tapply will sum the steps for every day and assign it to stepsvar 
+
 qplot(stepsvar, binwidth=800, xlab="Days",ylab="Frequency of Total Steps Per Day",colour=I("purple"))
 ```
 
@@ -25,7 +29,7 @@ qplot(stepsvar, binwidth=800, xlab="Days",ylab="Frequency of Total Steps Per Day
 
 ```r
 mean_steps <- as.integer(mean(stepsvar))
-median_steps <- median(stepsvar)
+median_steps <- as.integer(median(stepsvar))
 ```
 The mean and median of total steps per day are 9354 and 10395 respectively.
 
@@ -48,13 +52,14 @@ ggplot(data=average_data, mapping=aes(x=interval, y=steps)) +
 
 ## Imputing missing values
 
-There are a number of days/intervals where the number of steps taken is missing,  
-it is coded as NA in the original dataset. These missing values may introduce
+There are a number of days/intervals where the number of steps taken is missing,
+they are coded as NA in the original dataset. These missing values may introduce
 bias into some calculations or summaries of the data.
 
-Finding the number of missing values
+### Finding the number of missing values
 
 ```r
+#the generic function is.na indicates which elements are missing
 sum(is.na(df2))
 ```
 
@@ -62,7 +67,7 @@ sum(is.na(df2))
 ## [1] 2304
 ```
 
-We can fill all the missing values with the mean value of that 5 minute interval
+We can fill all the missing values with the mean value of that 5 minute interval.
 
 
 ```r
@@ -74,7 +79,11 @@ na_fill <- function(steps, interval) {
         mod_df <- (average_data[average_data$interval==interval, "steps"])
     return(mod_df)
 }
+# The function above replaces the NA values with the mean value of that 
+# corresponding interval.
+
 new_df <- df2
+# We use mapply to apply the function to multiple arguments
 new_df$steps <- mapply(na_fill, new_df$steps, new_df$interval)
 ```
 Using the new dataset, we again plot the histogram and find the mean and median  
@@ -82,8 +91,11 @@ of the total number of steps taken per day.
 
 
 ```r
+#tapply will sum the steps for every day and assign it to stepsvar2 
 stepsvar2 <- tapply(new_df$steps, new_df$date, FUN=sum)
-qplot(stepsvar2, binwidth=800, xlab="total number of steps taken each day")
+
+qplot(stepsvar2, binwidth=800, xlab="Days",ylab="Frequency of total steps per 
+      day",colour=I("green"))
 ```
 
 ![](PA1_template_files/figure-html/meansteps2-1.png)<!-- -->
@@ -93,7 +105,8 @@ mean_steps2 <- as.integer(mean(stepsvar2))
 median_steps2 <- as.integer(median(stepsvar2))
 ```
 The mean and median of total steps per day in the modified histogram are
-10766 and  10766 respectively. 
+10766 and  10766 respectively.  
+
 The observation here is that these values differ from those in the first part
 of the assignment. The impact of imputing missing data is that both the mean
 and median values are higher relatively. This is because instead of using 0
@@ -106,6 +119,8 @@ each date measurement.
 
 
 ```r
+# the below function takes a date and outputs either weekend or weekday
+# with the help of the weekdays() function in R.
 day_helper <- function(date) {
     day <- weekdays(date)
     foo <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
@@ -118,6 +133,7 @@ day_helper <- function(date) {
         stop("invalid date")
 }
 new_df$date <- as.Date(new_df$date)
+# sapply applies the helper function over the date column of our dataframe
 new_df$day <- sapply(new_df$date, FUN=day_helper)
 ```
 
@@ -125,8 +141,11 @@ We make a time series plot of the 5 minute interval and the average number of
 steps taken, averaged across all weekdays and week-end days.
 
 ```r
+# aggregate function splits the steps day into subset based on type of day
 average_data2 <- aggregate(steps ~ interval + day, data=new_df, mean)
-ggplot(average_data2, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
+
+# facet grid forms a matrix of panels defined by row nad column faceting variables.
+ggplot(average_data2, aes(interval, steps)) + geom_line(colour=I("blue")) + facet_grid(day ~ .) +
     xlab("Interval of 5 minutes")+ ylab("Average Number of Steps Taken in Interval")
 ```
 
