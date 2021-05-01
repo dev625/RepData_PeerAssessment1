@@ -97,7 +97,7 @@ values for the missing data we are using the mean value.
 For observing this difference, we need to find the day corresponding to 
 each date measurement.
 
-```{r}
+```{r filling_missing,echo=TRUE}
 # the below function takes a date and outputs either weekend or weekday
 # with the help of the weekdays() function in R.
 day_helper <- function(date) {
